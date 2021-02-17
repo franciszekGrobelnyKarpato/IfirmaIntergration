@@ -1,0 +1,12 @@
+<aura:component implements="force:lightningQuickAction,flexipage:availableForAllPageTypes" controller="ifirmaService" access="global">
+	
+	<aura:attribute name="loaded" type="Boolean" default="false" /> 
+       
+    <lightning:button label="Update Invoices" onclick="{!c.saveInvoicesLComp}"/> 
+    
+	<div>
+        <aura:if isTrue="{!v.loaded }">                        
+            <lightning:spinner alternativeText="Loading" />                                          
+        </aura:if>
+    </div>
+</aura:component>
