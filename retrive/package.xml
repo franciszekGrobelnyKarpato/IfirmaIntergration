@@ -17,8 +17,7 @@
         <members>ifirmaServiceLComp</members>
         <name>AuraDefinitionBundle</name>
     </types>
-    <types>
-        <members>Account.NIP__c</members>
+    <types>        
         <members>Account.PrefiksUE__c</members>
         <members>Account.Vat_Percentage__c</members>
         <members>Ifirma_Invoice_Settings__mdt.Authorized_Person__c</members>
@@ -27,15 +26,8 @@
         <members>Ifirma_Invoice_Settings__mdt.Currency_Type__c</members>
         <members>Ifirma_Invoice_Settings__mdt.Currency_Value__c</members>
         <members>Ifirma_Invoice_Settings__mdt.Place_Of_Creation__c</members>
-        <members>Ifirma_Invoice_Settings__mdt.Template_Name__c</members>        
-        <members>Invoice_Custom__c.Account__c</members>
-        <members>Invoice_Custom__c.Net_Price_Sum__c</members>
-        <members>Invoice_Custom__c.Opportunity__c</members>
-        <members>Invoice_Custom__c.Whole_Number__c</members>
-        <members>Invoice_Custom__c.date_of_invoice__c</members>
-        <members>Invoice_Custom__c.date_of_payment__c</members>
-        <members>Invoice_Custom__c.method_of_payment__c</members>
-        <members>Invoice_Custom__c.sale_date__c</members>        
+        <members>Ifirma_Invoice_Settings__mdt.Template_Name__c</members>                   
+        <members>Invoice_Custom__c.Opportunity__c</members>                         
         <members>Opportunity.Date_Of_Tax_Obligation__c</members>
         <members>Opportunity.Paid__c</members>
         <members>Opportunity.Payment_Date__c</members>

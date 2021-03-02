@@ -152,28 +152,7 @@
     <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
-    <externalSharingModel>Private</externalSharingModel>
-    <fields>
-        <fullName>Account__c</fullName>
-        <deleteConstraint>Restrict</deleteConstraint>
-        <externalId>false</externalId>
-        <label>Account</label>
-        <referenceTo>Account</referenceTo>        
-        <relationshipName>Invoices</relationshipName>
-        <required>false</required>
-        <trackTrending>false</trackTrending>
-        <type>Lookup</type>
-    </fields>
-    <fields>
-        <fullName>Net_Price_Sum__c</fullName>
-        <externalId>false</externalId>
-        <label>Net Price Sum</label>
-        <summarizedField>Invoice_Line__c.Net_Price__c</summarizedField>
-        <summaryForeignKey>Invoice_Line__c.Invoice_Custom__c</summaryForeignKey>
-        <summaryOperation>sum</summaryOperation>
-        <trackTrending>false</trackTrending>
-        <type>Summary</type>
-    </fields>
+    <externalSharingModel>Private</externalSharingModel>    
     <fields>
         <fullName>Opportunity__c</fullName>
         <deleteConstraint>SetNull</deleteConstraint>
@@ -185,51 +164,7 @@
         <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
-    </fields>
-    <fields>
-        <fullName>Whole_Number__c</fullName>
-        <externalId>false</externalId>
-        <label>Whole Number</label>
-        <length>200</length>
-        <required>false</required>
-        <trackTrending>false</trackTrending>
-        <type>Text</type>
-        <unique>false</unique>
-    </fields>
-    <fields>
-        <fullName>date_of_invoice__c</fullName>
-        <externalId>false</externalId>
-        <label>date of invoice</label>
-        <required>false</required>
-        <trackTrending>false</trackTrending>
-        <type>Date</type>
-    </fields>
-    <fields>
-        <fullName>date_of_payment__c</fullName>
-        <externalId>false</externalId>
-        <label>date of payment</label>
-        <required>false</required>
-        <trackTrending>false</trackTrending>
-        <type>Date</type>
-    </fields>
-    <fields>
-        <fullName>method_of_payment__c</fullName>
-        <externalId>false</externalId>
-        <label>method of payment</label>
-        <length>200</length>
-        <required>false</required>
-        <trackTrending>false</trackTrending>
-        <type>Text</type>
-        <unique>false</unique>
-    </fields>
-    <fields>
-        <fullName>sale_date__c</fullName>
-        <externalId>false</externalId>
-        <label>sale date</label>
-        <required>false</required>
-        <trackTrending>false</trackTrending>
-        <type>Date</type>
-    </fields>
+    </fields>         
     <label>Invoice</label>
     <listViews>
         <fullName>All</fullName>
