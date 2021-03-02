@@ -158,21 +158,11 @@
         <deleteConstraint>Restrict</deleteConstraint>
         <externalId>false</externalId>
         <label>Account</label>
-        <referenceTo>Account</referenceTo>
+        <referenceTo>Account</referenceTo>        
         <relationshipName>Invoices</relationshipName>
         <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
-    </fields>
-    <fields>
-        <fullName>Gross_Price_Sum__c</fullName>
-        <externalId>false</externalId>
-        <label>Gross_Price_Sum</label>
-        <summarizedField>Invoice_Line__c.Gross_Price__c</summarizedField>
-        <summaryForeignKey>Invoice_Line__c.Invoice_Custom__c</summaryForeignKey>
-        <summaryOperation>sum</summaryOperation>
-        <trackTrending>false</trackTrending>
-        <type>Summary</type>
     </fields>
     <fields>
         <fullName>Net_Price_Sum__c</fullName>
@@ -183,6 +173,18 @@
         <summaryOperation>sum</summaryOperation>
         <trackTrending>false</trackTrending>
         <type>Summary</type>
+    </fields>
+    <fields>
+        <fullName>Opportunity__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Opportunity</label>
+        <referenceTo>Opportunity</referenceTo>
+        <relationshipLabel>Invoices</relationshipLabel>
+        <relationshipName>Invoices_Custom</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
     </fields>
     <fields>
         <fullName>Whole_Number__c</fullName>
@@ -231,7 +233,7 @@
     <label>Invoice</label>
     <listViews>
         <fullName>All</fullName>
-        <columns>NAME</columns>
+		<columns>NAME</columns>
         <columns>Account__c</columns>
         <columns>Net_Price_Sum__c</columns>
         <columns>Gross_Price_Sum__c</columns>

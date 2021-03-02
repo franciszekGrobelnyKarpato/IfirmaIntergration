@@ -3,6 +3,7 @@ public with sharing class DataNotFullyFilledExceptionTest {
 
     @isTest
     public static void givenInvoiceListWhenThrowExceptionThenSendEmail(){
+        //given
         List<SingleInvoiceJSON2Apex.Response> invoices = new List<SingleInvoiceJSON2Apex.Response>();
         for(Integer i=0;i<200;i++) {
             SingleInvoiceJSON2Apex.Response response = new SingleInvoiceJSON2Apex.Response();
@@ -13,6 +14,8 @@ public with sharing class DataNotFullyFilledExceptionTest {
             response.Kontrahent.NIP='nip'+i;
             invoices.add(response);
         }
+        
+        //when
         Test.startTest();
         try{
             throw new DataNotFullyFilledException();
@@ -21,6 +24,7 @@ public with sharing class DataNotFullyFilledExceptionTest {
         }
         Integer limits = Limits.getEmailInvocations();
         Test.stopTest();
-        System.assertEquals(1, limits);
+        //then
+        System.assertEquals(1, limits);        
     }
 }

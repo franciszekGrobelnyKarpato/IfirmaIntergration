@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fields>
+  <fields>
         <fullName>NIP__c</fullName>
         <externalId>false</externalId>
         <label>VAT nr</label>
@@ -9,5 +9,26 @@
         <trackFeedHistory>false</trackFeedHistory>
         <type>Text</type>
         <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>PrefiksUE__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>PrefiksUE can contain only length of two characters</inlineHelpText>
+        <label>PrefiksUE</label>
+        <length>2</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Vat_Percentage__c</fullName>
+        <externalId>false</externalId>
+        <label>Vat Percentage</label>
+        <precision>3</precision>
+        <required>true</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Percent</type>
     </fields>
 </CustomObject>

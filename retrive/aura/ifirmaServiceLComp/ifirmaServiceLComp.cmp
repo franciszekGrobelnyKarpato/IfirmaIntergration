@@ -1,12 +1,23 @@
-<aura:component implements="force:lightningQuickAction,flexipage:availableForAllPageTypes" controller="ifirmaService" access="global">
-	
-	<aura:attribute name="loaded" type="Boolean" default="false" /> 
-       
-    <lightning:button label="Update Invoices" onclick="{!c.saveInvoicesLComp}"/> 
+<aura:component implements="force:lightningQuickAction,flexipage:availableForAllPageTypes" controller="ifirmaService" access="global">	
     
-	<div>
-        <aura:if isTrue="{!v.loaded }">                        
-            <lightning:spinner alternativeText="Loading" />                                          
-        </aura:if>
-    </div>
+	<aura:attribute name="loaded" type="Boolean" default="false" /> 
+    <aura:attribute name="disabled" type="Boolean" default="false" /> 
+           
+	<div class="slds-box slds-theme_default">
+        <div class="first">
+            <h2>
+                <span class="slds-text-heading_small bold">Ifirma.pl</span>
+            </h2>
+            
+            <div class="buttonContainer">
+                <lightning:button disabled="{!v.disabled}" variant="brand" label="Update Invoices" onclick="{!c.saveInvoicesLComp}" /> 
+            </div>
+            
+            <aura:if isTrue="{!v.loaded }">               
+                <div class=" isActivityLoading ">
+                    <lightning:spinner class="spinner" alternativeText="Loading" variant="brand"/>  
+                </div>               
+            </aura:if>            
+        </div>
+    </div>    
 </aura:component>

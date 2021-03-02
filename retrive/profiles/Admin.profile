@@ -9,11 +9,27 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>InvoiceByIDJSON2Apex</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>InvoicesListJSON2Apex</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>PostResponseJSON2Apex</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>SingleInvoiceJSON2Apex</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>WeeklyIfirma</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>WeeklyIfirmaTest</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -34,9 +50,49 @@
     </classAccesses>
     <custom>false</custom>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>Account.PrefiksUE__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Ifirma_Invoice_Settings__mdt.Authorized_Person__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Ifirma_Invoice_Settings__mdt.Bank_Account_Number__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Ifirma_Invoice_Settings__mdt.Country_Names__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Ifirma_Invoice_Settings__mdt.Currency_Type__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+	<fieldPermissions>
         <editable>false</editable>
         <field>Account.NIP__c</field>
         <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Ifirma_Invoice_Settings__mdt.Currency_Value__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Ifirma_Invoice_Settings__mdt.Place_Of_Creation__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Ifirma_Invoice_Settings__mdt.Template_Name__c</field>
+        <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
@@ -60,12 +116,12 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Invoice_Custom__c.Gross_Price_Sum__c</field>
+        <field>Invoice_Custom__c.Net_Price_Sum__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
-        <field>Invoice_Custom__c.Net_Price_Sum__c</field>
+        <editable>true</editable>
+        <field>Invoice_Custom__c.Opportunity__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -144,6 +200,9 @@
         <readable>true</readable>
     </fieldPermissions>
     <layoutAssignments>
+        <layout>Ifirma_Invoice_Settings__mdt-Ifirma Invoice Settings Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
         <layout>Ifirma_Rest_Data__mdt-Ifirma Rest Data Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
@@ -152,7 +211,7 @@
     <layoutAssignments>
         <layout>Invoice_Line__c-invoice line Layout</layout>
     </layoutAssignments>
-    <loginIpRanges>
+	<loginIpRanges>
         <endAddress>255.255.255.255</endAddress>
         <startAddress>0.0.0.0</startAddress>
     </loginIpRanges>
@@ -173,13 +232,13 @@
         <modifyAllRecords>true</modifyAllRecords>
         <object>Invoice_Line__c</object>
         <viewAllRecords>true</viewAllRecords>
-    </objectPermissions>
-    <tabVisibilities>
+    </objectPermissions> 
+<tabVisibilities>
         <tab>Invoice_Custom__c</tab>
         <visibility>DefaultOn</visibility>
     </tabVisibilities>
     <tabVisibilities>
         <tab>Invoice_Line__c</tab>
         <visibility>DefaultOn</visibility>
-    </tabVisibilities>    
+    </tabVisibilities>  	
 </Profile>
