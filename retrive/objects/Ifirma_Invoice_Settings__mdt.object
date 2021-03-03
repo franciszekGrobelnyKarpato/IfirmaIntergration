@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+	<fields>
+        <fullName>PrefiksUE__c</fullName>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <label>PrefiksUE</label>
+        <length>2</length>
+        <required>true</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
     <fields>
         <fullName>Authorized_Person__c</fullName>
         <externalId>false</externalId>

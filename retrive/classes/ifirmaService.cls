@@ -36,14 +36,9 @@ global  class ifirmaService {
             saveInvoices(); 
         
     }
-/*
-Create contentVersion obj for every invoice downloaded from ifirma.pl
-Delete all PDFs related with existed Invoice_Custom object
-*/
     @TestVisible
     private static void savePDF(){        
-        AggregateResult invoicesAmount = [SELECT count(Id)amount 
-                                          FROM Invoice_Custom__c];
+        AggregateResult invoicesAmount = [select count(Id)amount FROM Invoice_Custom__c];
                                 
         for(String numer : numberURLsMap.keySet()){
             String hash = hmacGenerator.generateHmacSHA1('https://www.ifirma.pl/iapi/'+numberURLsMap.get(numer)+'/'+numer+'.pdf.single'+user+'faktura', key);  
@@ -64,7 +59,7 @@ Delete all PDFs related with existed Invoice_Custom object
             cvMap.put(cv.Title, cv);                                     
         }
         if(Integer.valueOf(invoicesAmount.get('amount')) > 0){
-            deleteOldPDFs(cvMap);
+            deleteOldPDfs(cvMap);
         }
         Database.insert(cvMap.values());                                         
     }   
@@ -72,22 +67,32 @@ Delete all PDFs related with existed Invoice_Custom object
 Delete pdf files for existed in org invoice objects
 */
     @TestVisible
-    private static void deleteOldPDFs(Map<String, contentVersion> cvMap){
-        List<id> cvList = new List<id>();      
+    private static void deleteOldPDfs(Map<String, contentVersion> cvMap){
+        Set<id> cvSet = new Set<id>();
+        List<Invoice_Custom__c> invoices = [SELECT  name 
+                                            FROM invoice_Custom__c];
+        List<String> invNames = new List<String>();
+        for(Invoice_Custom__c inv : invoices){
+            invNames.add(inv.Name);
+        }
         for(contentVersion conVers : [SELECT id, title, contentDocumentid 
                                       FROM contentVersion]){
             if(cvMap.containsKey(conVers.title)){
-                cvList.add(conVers.contentDocumentid);
+                cvSet.add(conVers.contentDocumentid);
             }                          
         }
-        Database.delete(cvList);                                                                                    
+        
+        List<Id> documentIds = new List<Id>(new Map<Id, ContentDocument>([SELECT id 
+                                                                          FROM ContentDocument 
+                                                                          WHERE id IN :cvSet]).keySet());
+        Database.delete(documentIds);                                                                                    
     }
 
     @TestVisible
     public static void setMetaData(){
         Ifirma_Rest_Data__mdt restdata = [SELECT User__c, Key__c 
-                                          FROM Ifirma_Rest_Data__mdt 
-                                          WHERE Label='Settings' LIMIT 1];  
+                                            FROM Ifirma_Rest_Data__mdt 
+                                            WHERE Label='Settings' LIMIT 1];  
         user = restdata.User__c;
         key = restdata.Key__c;
     }
@@ -119,19 +124,19 @@ Save all needed data from Salesforce Org to global properties
             wholeNummbersInIfirma.add(inv.PelnyNumer.replace('/', '_'));                       
         }
         for(Account account : [SELECT id, NIP__c 
-                               FROM Account 
-                               WHERE NIP__c IN :nipsInIfirma]){               
+                                FROM Account 
+                                WHERE NIP__c IN :nipsInIfirma]){               
             baseAccountsNIPMap.put(account.NIP__c, account);  
         }     
         for(Invoice_Custom__c invc : [SELECT id, Whole_Number__c, Name
-                                      FROM Invoice_Custom__c 
-                                      WHERE Whole_Number__c IN :wholeNummbersInIfirma]){
+                                        FROM Invoice_Custom__c 
+                                        WHERE Whole_Number__c IN :wholeNummbersInIfirma]){
             baseInvoicesWholeNumberMap.put(invc.Whole_Number__c.replace('_','/'), invc);  
             baseInvoiceNames.add(invc.Name);     
         }  
         for(Invoice_Line__c baseInvoiceLine :[SELECT Id, Name, Invoice_Custom__r.Name
-                                              FROM Invoice_Line__c 
-                                              WHERE Invoice_Custom__r.Name IN :baseInvoiceNames]){
+                                                FROM Invoice_Line__c 
+                                                WHERE Invoice_Custom__r.Name IN :baseInvoiceNames]){
             baseInvoiceLinesWholeNumberMap.put(baseInvoiceLine.Id, baseInvoiceLine);      
         }
     }
@@ -216,8 +221,8 @@ Return a ContentDocumentLink for specific contentVersion
     private static ContentDocumentLink getDocumentLInkBy(contentVersion cv, String invoiceType){
         ContentDocumentLink cdl = new ContentDocumentLink();
         cdl.ContentDocumentId = [SELECT contentDocumentId 
-                                 FROM contentVersion 
-                                 WHERE id =:cv.id].contentDocumentId;
+                                    FROM contentVersion 
+                                    WHERE id =:cv.id].contentDocumentId;
         if(invoiceType.equals('create')){
         cdl.LinkedEntityId = customInvoiceMap.get(cv.title.replace('/','_')).id;
         }else if(invoiceType.equals('update')){
@@ -258,8 +263,8 @@ Create invoice lines for not existed invoice or update(delete before then insert
         
         if(invoiceLinesToUpdate.size() > 0){
             Database.delete([SELECT Id 
-                             FROM Invoice_Line__c 
-                             WHERE Invoice_Custom__r.Whole_Number__c IN :invoiceLinesToUpdate.keySet()]);
+                            FROM Invoice_Line__c 
+                            WHERE Invoice_Custom__r.Whole_Number__c IN :invoiceLinesToUpdate.keySet()]);
 
             for(String key : invoiceLinesToUpdate.keySet()){
                 for(SingleInvoiceJSON2Apex.Pozycje invoiceLineC : invoiceLinesToUpdate.get(key)){
@@ -377,26 +382,29 @@ then save invoice to Invoice Custom Object with related Opportunity
         String languageLabel = '';
         Map<String, Invoice_Custom__c> invMap =  new Map<String, Invoice_Custom__c>();
  
-        Opportunity opportunityToSend = [SELECT Name, AccountId, Publish_Date__c, Service_Name__c, Sale_Date__c, Paid__c, Payment_Date__c, Date_Of_Tax_Obligation__c
+        Opportunity opportunityToSend = [SELECT Name, AccountId, Publish_Date__c, Sale_Date__c, Payment_Date__c, Date_Of_Tax_Obligation__c, Vat_Percentage__c
                                          FROM Opportunity
                                          WHERE Id =:recordId];
-        Account oppAccount = [SELECT Name, Nip__c, Vat_Percentage__c, BillingCity,BillingCountry,BillingStreet, BillingPostalCode, PrefiksUE__c
+        Account oppAccount = [SELECT Name, Nip__c, BillingCity,BillingCountry,BillingStreet, BillingPostalCode
                               FROM Account 
                               WHERE id=:opportunityToSend.AccountId];  
         
         Map<String, Ifirma_Invoice_Settings__mdt> invoiceRestdata = new Map<String, Ifirma_Invoice_Settings__mdt>();
-        for(Ifirma_Invoice_Settings__mdt invoiceSett : [SELECT Label, Country_Names__c, Authorized_Person__c, Place_Of_Creation__c, Template_Name__c, Bank_Account_Number__c, Currency_Type__c, Currency_Value__c
-                                                        FROM Ifirma_Invoice_Settings__mdt]){                                                         
+        for(Ifirma_Invoice_Settings__mdt invoiceSett : [SELECT Label, Country_Names__c, PrefiksUE__c, Authorized_Person__c, Place_Of_Creation__c, Template_Name__c, Bank_Account_Number__c, Currency_Type__c, Currency_Value__c
+                                              FROM Ifirma_Invoice_Settings__mdt]){
             invoiceRestdata.put(invoiceSett.Label, invoiceSett);
-        }    
+        }         
         for(String label : invoiceRestdata.keySet()){
             List<String> countries = invoiceRestdata.get(label).Country_Names__c.split(',');
             for(String country : countries){
-                if(oppAccount.BillingCountry.toLowerCase().equals(country.trim().toLowerCase())){
+                if(oppAccount.BillingCountry.toLowerCase().equals(country.toLowerCase())){
                     languageLabel = invoiceRestdata.get(label).Label;
                 }
             }
-        }                     
+        }    
+        Ifirma_Invoice_Settings__mdt invoiceSetting = [SELECT Label, Country_Names__c, PrefiksUE__c, Authorized_Person__c, Place_Of_Creation__c, Template_Name__c, Bank_Account_Number__c, Currency_Type__c, Currency_Value__c
+                                                       FROM Ifirma_Invoice_Settings__mdt
+                                                       WHERE label =:languageLabel];     
         List<OpportunityLineItem> oppProductList = [SELECT Unit__c, Unit_Foreign__c,  Quantity, UnitPrice, Product2.Name
                                                     FROM OpportunityLineItem
                                                     WHERE Opportunity.Id =:recordId];
@@ -404,19 +412,19 @@ then save invoice to Invoice Custom Object with related Opportunity
         String generalData = '"DataWystawienia":"'+DateTime.newInstance(opportunityToSend.Publish_Date__c.year(), opportunityToSend.Publish_Date__c.month(), opportunityToSend.Publish_Date__c.day()).format('yyyy-MM-dd')+'","DataSprzedazy":"'+DateTime.newInstance(opportunityToSend.Sale_Date__c.year(), opportunityToSend.Sale_Date__c.month(), opportunityToSend.Sale_Date__c.day()).format('yyyy-MM-dd')+'","FormatDatySprzedazy":"DZN","SposobZaplaty":"PRZ","RodzajPodpisuOdbiorcy":"OUP","WidocznyNumerGios":false,"Numer":null,"TerminPlatnosci":"'+DateTime.newInstance(opportunityToSend.Payment_Date__c.year(), opportunityToSend.Payment_Date__c.month(), opportunityToSend.Payment_Date__c.day()).format('yyyy-MM-dd')+'"';
         String account = '{"Nazwa":"'+oppAccount.Name+'","NIP":"'+oppAccount.Nip__c+'", "KodPocztowy":"'+oppAccount.BillingPostalCode+'","Kraj":"'+oppAccount.BillingCountry+'"';
         if(languageLabel.equals('Polish')){
-            generalData += ',"NazwaSzablonu":"'+invoiceRestdata.get(languageLabel).Template_Name__c+'","MiejsceWystawienia":"'+invoiceRestdata.get(languageLabel).Place_Of_Creation__c+'","PodpisWystawcy":"'+invoiceRestdata.get(languageLabel).Authorized_Person__c+'","Zaplacono":'+opportunityToSend.Paid__c+',"NIPKontrahenta":"'+oppAccount.Nip__c+'","LiczOd":"NET"';
+            generalData += ',"NazwaSzablonu":"'+invoiceRestdata.get(languageLabel).Template_Name__c+'","MiejsceWystawienia":"'+invoiceRestdata.get(languageLabel).Place_Of_Creation__c+'","PodpisWystawcy":"'+invoiceRestdata.get(languageLabel).Authorized_Person__c+'","Zaplacono":0.00 ,"NIPKontrahenta":"'+oppAccount.Nip__c+'","LiczOd":"NET"';
             endpointPost = 'https://www.ifirma.pl/iapi/fakturakraj.json';
             
             if(invoiceRestdata.get(languageLabel).Bank_Account_Number__c != null){
                 generalData += ',"NumerKontaBankowego":"'+invoiceRestdata.get(languageLabel).Bank_Account_Number__c+'"';
             }
-        }else{       
-            generalData += ',"NazwaSzablonu":"'+invoiceRestdata.get(languageLabel).Template_Name__c+'","MiejsceWystawienia":"'+invoiceRestdata.get(languageLabel).Place_Of_Creation__c+'","PodpisWystawcy":"'+invoiceRestdata.get(languageLabel).Authorized_Person__c+'","NIPKontrahenta":"'+oppAccount.Nip__c+'","NazwaUslugi":"'+opportunityToSend.Service_Name__c+'","Jezyk":"en","DataObowiazkuPodatkowego":"'+DateTime.newInstance(opportunityToSend.Date_Of_Tax_Obligation__c.year(), opportunityToSend.Date_Of_Tax_Obligation__c.month(), opportunityToSend.Date_Of_Tax_Obligation__c.day()).format('yyyy-MM-dd')+'","Waluta":"'+invoiceRestdata.get(languageLabel).Currency_Type__c+'","KursWalutyWidoczny":"false","KursWalutyZDniaPoprzedzajacegoDzienWystawieniaFaktury":'+invoiceRestdata.get(languageLabel).Currency_Value__c+'';
+        }else{
+            generalData += ',"NazwaSzablonu":"'+invoiceRestdata.get(languageLabel).Template_Name__c+'","MiejsceWystawienia":"'+invoiceRestdata.get(languageLabel).Place_Of_Creation__c+'","PodpisWystawcy":"'+invoiceRestdata.get(languageLabel).Authorized_Person__c+'","NIPKontrahenta":"'+oppAccount.Nip__c+'","NazwaUslugi":"'+opportunityToSend.Name+'","Jezyk":"en","DataObowiazkuPodatkowego":"'+DateTime.newInstance(opportunityToSend.Date_Of_Tax_Obligation__c.year(), opportunityToSend.Date_Of_Tax_Obligation__c.month(), opportunityToSend.Date_Of_Tax_Obligation__c.day()).format('yyyy-MM-dd')+'","Waluta":"'+invoiceRestdata.get(languageLabel).Currency_Type__c+'","KursWalutyWidoczny":"false","KursWalutyZDniaPoprzedzajacegoDzienWystawieniaFaktury":'+invoiceRestdata.get(languageLabel).Currency_Value__c+'';
             endpointPost = 'https://www.ifirma.pl/iapi/fakturaeksportuslugue.json';
             
-            if(oppAccount.PrefiksUE__c != null){
-                generalData += ',"PrefiksUEKontrahenta":"'+oppAccount.PrefiksUE__c+'"';
-                account += ',"PrefiksUE":"'+oppAccount.PrefiksUE__c+'"';
+            if(invoiceSetting.PrefiksUE__c != null){
+                generalData += ',"PrefiksUEKontrahenta":"'+invoiceSetting.PrefiksUE__c+'"';
+                account += ',"PrefiksUE":"'+invoiceSetting.PrefiksUE__c+'"';
             }
             if(invoiceRestdata.get(languageLabel).Bank_Account_Number__c != null){
                 generalData += ',"NumerKontaBankowego":"'+invoiceRestdata.get(languageLabel).Bank_Account_Number__c+'"';
@@ -431,7 +439,7 @@ then save invoice to Invoice Custom Object with related Opportunity
         account += '}';
         for(Integer i = 0; i < oppProductList.size(); i++){
             OpportunityLineItem oppLI = oppProductList.get(i);
-            lineItems += '{"StawkaVat":'+oppAccount.Vat_Percentage__c/100+',"TypStawkiVat":"PRC","Ilosc":'+oppLI.Quantity+',"CenaJednostkowa":'+oppLI.UnitPrice+',"NazwaPelna":"'+oppLI.Product2.Name+'","Jednostka":"'+oppLI.Unit__c+'"';
+            lineItems += '{"StawkaVat":'+ Integer.valueOf(opportunityToSend.Vat_Percentage__c)/100+',"TypStawkiVat":"PRC","Ilosc":'+oppLI.Quantity+',"CenaJednostkowa":'+oppLI.UnitPrice+',"NazwaPelna":"'+oppLI.Product2.Name+'","Jednostka":"'+oppLI.Unit__c+'"';
             if(languageLabel.equals('Polish')){
                 lineItems += ',"PKWiU":""}';
             }else{
@@ -481,7 +489,37 @@ then save invoice to Invoice Custom Object with related Opportunity
             request.setBody(rest);
         }          
         HttpResponse response = http.send(request);
+
         return response;
+    }
+    @AuraEnabled
+    public static List<String> checkFilledFields(Id recordId){       
+        List<String> notFilled = new List<String>();
+        Map<String, String> oppData = new Map<String, String>();
+        Opportunity oppToCreateInvoice = [SELECT Date_Of_Tax_Obligation__c, Account.BillingCity, Account.BillingPostalCode, Payment_Date__c, Publish_Date__c, Sale_Date__c, Vat_Percentage__c
+                                          FROM Opportunity
+                                          WHERE ID = :recordId];
+        
+        oppData.put(Schema.getGlobalDescribe().get('Opportunity').getDescribe().fields.getMap().get('Date_Of_Tax_Obligation__c').getDescribe().getLabel(), String.valueOf(oppToCreateInvoice.Date_Of_Tax_Obligation__c));
+        oppData.put(Schema.getGlobalDescribe().get('Opportunity').getDescribe().fields.getMap().get('Payment_Date__c').getDescribe().getLabel(), String.valueOf(oppToCreateInvoice.Payment_Date__c));
+        oppData.put(Schema.getGlobalDescribe().get('Opportunity').getDescribe().fields.getMap().get('Publish_Date__c').getDescribe().getLabel(), String.valueOf(oppToCreateInvoice.Publish_Date__c));
+        oppData.put(Schema.getGlobalDescribe().get('Opportunity').getDescribe().fields.getMap().get('Sale_Date__c').getDescribe().getLabel(), String.valueOf(oppToCreateInvoice.Sale_Date__c));
+        oppData.put(Schema.getGlobalDescribe().get('Opportunity').getDescribe().fields.getMap().get('Vat_Percentage__c').getDescribe().getLabel(), oppToCreateInvoice.Vat_Percentage__c);
+        oppData.put(Schema.getGlobalDescribe().get('Account').getDescribe().fields.getMap().get('BillingCity').getDescribe().getLabel(), oppToCreateInvoice.Account.BillingCity);        
+        oppData.put(Schema.getGlobalDescribe().get('Account').getDescribe().fields.getMap().get('BillingPostalCode').getDescribe().getLabel(), oppToCreateInvoice.Account.BillingPostalCode);
+System.debug('oppData' + oppData);
+        for(String fieldKey : oppData.keySet()){
+            if(oppData.get(fieldKey) == null){
+System.debug('powinno sei dorzucic ' + fieldKey);
+                notFilled.add(fieldKey);
+            }
+        }         
+        if([SELECT Name 
+            FROM OpportunityLineItem 
+            WHERE  Opportunity.id = :recordId].size() == 0){
+            notFilled.add(' Add Product');
+        }
+        return notFilled;
     }
     public class PostResponseWrapper{
         @AuraEnabled 
