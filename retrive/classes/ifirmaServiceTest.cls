@@ -517,7 +517,6 @@ private class ifirmaServiceTest {
     }
     @isTest
     static void givenOpportunityAndForeignAccountWhenCreatingInvoiceForOpportunityThenCheckIfInvocieRelatedToOpportunity(){  
-System.debug('odpalam test');
         //given
         Account account = new Account(Name='not relevant acc',
                                       Nip__c = '121212',                                      
@@ -571,7 +570,6 @@ System.debug('odpalam test');
     //when
         Test.setMock(HttpCalloutMock.class, new Mock());
         Test.startTest();
-System.debug('odpalam test');
         ifirmaService.createInvoiceByOpportunity(opp.Id);
         Test.stopTest();
     //then

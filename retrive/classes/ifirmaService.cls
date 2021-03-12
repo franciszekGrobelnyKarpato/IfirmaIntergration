@@ -374,7 +374,6 @@ then save invoice to Invoice Custom Object with related Opportunity
 */
     @AuraEnabled
     public static PostResponseWrapper createInvoiceByOpportunity(Id recordId){      
-System.debug('metoda odpalona z testu');
         PostResponseWrapper postResponseWrapper = new PostResponseWrapper();            
         Integer newInvoiceIdentify;
         String lineItems = '';
@@ -475,12 +474,9 @@ System.debug('metoda odpalona z testu');
     }  
     
     private static void checkAndChangeAccountingMonth(Datetime saleDate){  
-System.debug('przed strzeleniem geta o mies ksiegowy');
         String endpoint ='https://www.ifirma.pl/iapi/abonent/miesiacksiegowy.json'; 
         HttpResponse response = getHttpResponse('GET', '', endpoint, 'abonent');
         Integer accountingMonth = AccountingMonthJSON2Apex.parse(response.getBody()).response.MiesiacKsiegowy;
-System.debug('accountingMonth '+accountingMonth);
-System.debug('saleDate '+saleDate);
         while(saleDate.month() != accountingMonth){
             if(saleDate.month() > accountingMonth){
                 response = getHttpResponse('PUT', '{"MiesiacKsiegowy":"NAST","PrzeniesDaneZPoprzedniegoRoku":true}', endpoint, 'abonent');               
