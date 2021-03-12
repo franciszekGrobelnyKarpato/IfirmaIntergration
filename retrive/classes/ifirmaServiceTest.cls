@@ -8,12 +8,17 @@ private class ifirmaServiceTest {
                 res.setBody('{"response": [{"KontrahentNazwa": "kkktest","KontrahentId": 45015903,"DataWystawienia": "2020-11-30","PelnyNumer": "1/2020","Brutto": 33}]}');
                 res.setStatusCode(200);
                 return res;
-            } else{
+            } else if(req.getEndpoint().endsWith('miesiacksiegowy.json')){
+                HTTPResponse res = new HTTPResponse();
+                res.setBody('{"response": {"RokKsiegowy": 2021,"MiesiacKsiegowy": 3}}');
+                res.setStatusCode(200);
+                return res;
+            }else{
                 HTTPResponse res = new HTTPResponse();
                 res.setBody('{"response": {"Zaplacono": 0,"ZaplaconoNaDokumencie": 0,"LiczOd": "BRT","NumerKontaBankowego": null,"IdentyfikatorKontrahenta": null,"PrefiksUEKontrahenta": null,"NIPKontrahenta": null,"DataWystawienia": "2020-11-24","MiejsceWystawienia": null,"DataSprzedazy": "2020-11-24","FormatDatySprzedazy": "DZN","TerminPlatnosci": "2020-12-01","SposobZaplaty": "PRZ","NazwaSeriiNumeracji": "Domyślna roczna","NazwaSzablonu": "Logo","RodzajPodpisuOdbiorcy": "BPO","PodpisOdbiorcy": null,"PodpisWystawcy": null,"Uwagi": null,"WidocznyNumerGios": false,"Numer": 1,"Pozycje": [{"Id": 106871869,"StawkaVat": null,"Ilosc": 12,"CenaJednostkowa": 1,"NazwaPelna": "samochód zabawka","Jednostka": "1","PKWiU": "Art. 113 ust. 1","PodstawaPrawna": "Art. 113 ust. 1","TypStawkiVat": "ZW","Rabat": null,"CenaZRabatem": 1,"StawkaRyczaltu": null,"MagazynPozycjaId": null,"MagazynMagazynId": null,"MagazynObiektSprzedazyId": null,"GTU": null}],"Kontrahent": {"Nazwa": "marek","Nazwa2": null,"Identyfikator": "MAREK(2)","PrefiksUE": "CZ","NIP": "1231313","Ulica": null,"KodPocztowy": "12-100","Kraj": null,"Miejscowosc": "Czarkowy Grąd","Email": null,"Telefon": null,"OsobaFizyczna": false,"ZgodaNaEfaktury": true,"DataUdzieleniaZgody": null,"EmailDlaFaktury": null,"JestDostawca": false,"JestOdbiorca": true,"AdresZagraniczny": false,"OdbiorcaNaFakturze": null,"Skype": null,"Faks": null,"Uwagi": null,"Www": null,"NazwaBanku": null,"NumerKonta": null,"DrugiTelefon": null,"AdresKorespondencyjnyUlica": null,"AdresKorespondencyjnyKodPocztowy": null,"AdresKorespondencyjnyKraj": null,"AdresKorespondencyjnyMiejscowosc": null,"PodmiotPowiazany": false},"PelnyNumer": "1/2020","WidocznyNumerBdo": false,"WpisDoKpir": "TOW","SplitPayment": false,"ProceduryJpk": {"SW": false,"EE": false,"TP": false,"TT_WNT": false,"TT_D": false,"MR_T": false,"MR_UZ": false,"I_42": false,"I_63": false,"BSPV": false,"BSPVDostawa": false,"BMPVProwizja": false,"MPP": false}}}');
                 res.setStatusCode(200);
                 return res;
-            } 
+            }
         }
     }   
     @isTest
@@ -484,13 +489,13 @@ private class ifirmaServiceTest {
         Opportunity opp = new Opportunity(Name = 'not relevant opp',
                                           Pricebook2Id = pbId,                                          
                                           AccountId = account.Id,
-                                          Publish_Date__c = Date.newInstance(2021, 02, 04),
-                                          Sale_Date__c = Date.newInstance(2021, 02, 04),                                          
-                                          Payment_Date__c = Date.newInstance(2021, 02, 04),
-                                          Date_Of_Tax_Obligation__c = Date.newInstance(2021, 02, 04),
+                                          Publish_Date__c = Date.newInstance(2021, 04, 30),
+                                          Sale_Date__c = Date.newInstance(2021, 04, 30),                                          
+                                          Payment_Date__c = Date.newInstance(2021, 05, 14),
+                                          Date_Of_Tax_Obligation__c = Date.newInstance(2021, 04, 30),
                                           StageName = 'Prospecting', 
                                           Vat_Percentage__c = '23',                                          
-                                          CloseDate = Date.newInstance(2021, 02, 04));        
+                                          CloseDate = Date.newInstance(2021, 04, 04));        
         Database.insert(opp);
         OpportunityLineItem oppProduct = new OpportunityLineItem(Product2Id = prod.Id,
                                                                  OpportunityId = opp.Id,                                                               
@@ -512,6 +517,7 @@ private class ifirmaServiceTest {
     }
     @isTest
     static void givenOpportunityAndForeignAccountWhenCreatingInvoiceForOpportunityThenCheckIfInvocieRelatedToOpportunity(){  
+System.debug('odpalam test');
         //given
         Account account = new Account(Name='not relevant acc',
                                       Nip__c = '121212',                                      
@@ -536,15 +542,15 @@ private class ifirmaServiceTest {
                                                 IsActive = TRUE);
         Database.insert(pbe2);
         Opportunity opp = new Opportunity(Name = 'not relevant opp',
-                                          Pricebook2Id = pbId,                                          
+                                          Pricebook2Id = pbId,          
                                           AccountId = account.Id,
-                                          Publish_Date__c = Date.newInstance(2021, 02, 04),
-                                          Sale_Date__c = Date.newInstance(2021, 02, 04),                                        
-                                          Payment_Date__c = Date.newInstance(2021, 02, 04),
-                                          Date_Of_Tax_Obligation__c = Date.newInstance(2021, 02, 04),
+                                          Publish_Date__c = Date.newInstance(2021, 02, 28),
+                                          Sale_Date__c = Date.newInstance(2021, 02, 28),                                          
+                                          Payment_Date__c = Date.newInstance(2021, 03, 14),
+                                          Date_Of_Tax_Obligation__c = Date.newInstance(2021, 02, 28),
                                           StageName = 'Prospecting',  
                                           Vat_Percentage__c = '23',                                                                                  
-                                          CloseDate = Date.newInstance(2021, 02, 04));        
+                                          CloseDate = Date.newInstance(2021, 04, 04));        
         Database.insert(opp);
         OpportunityLineItem oppProduct = new OpportunityLineItem(Product2Id = prod.Id,
                                                                  OpportunityId = opp.Id,                                                               
@@ -565,6 +571,7 @@ private class ifirmaServiceTest {
     //when
         Test.setMock(HttpCalloutMock.class, new Mock());
         Test.startTest();
+System.debug('odpalam test');
         ifirmaService.createInvoiceByOpportunity(opp.Id);
         Test.stopTest();
     //then
@@ -572,17 +579,41 @@ private class ifirmaServiceTest {
         System.assertEquals(opp.Id, [select name, opportunity__c from Invoice_Custom__c where name =:inv.Name].Opportunity__c);
     }
     @isTest
-    static void givenOpportunityWithoutNeededFieldsToCreateInvoiceWhenCheckingIfNotFilledThenReturnListWithAllFields(){
-        //given
+    static void givenNotFilledAccountCountryInMetaAndOpportunityWithoutNeededFieldsToCreateInvoiceWhenCheckingIfNotFilledThenReturnListWithAllFields(){
+        //given        
+        Account acc = new Account(Name='not relevant',
+                                  BillingCountry='koko maroko');                     
+        Database.insert(acc);
         Opportunity opp = new Opportunity(Name='not relevant',
                                           StageName='Prospecting', 
-                                          CloseDate=Date.newInstance(2021, 02, 04));
+                                          CloseDate=Date.newInstance(2021, 02, 04),
+                                          AccountId=acc.Id);
         Database.insert(opp);
+
         //when
-        List<String> l = ifirmaService.checkFilledFields(opp.Id);
+        List<String> notFilledFieldsList = ifirmaService.checkFilledFields(opp.Id);
         //then
-        System.assertNotEquals(null, l);
-        System.assertEquals(8, l.size());
-        System.assertNotEquals(0, l.size());
+        System.assertNotEquals(null, notFilledFieldsList);
+        System.assertEquals(9, notFilledFieldsList.size());
+        System.assertNotEquals(0, notFilledFieldsList.size());
+    }
+    @isTest
+    static void givenFilledAccountCountryInMetaAndOpportunityWithoutNeededFieldsToCreateInvoiceWhenCheckingIfNotFilledThenReturnListWithAllFields(){
+        //given        
+        Account acc = new Account(Name='not relevant',
+                                  BillingCountry='Poland');                     
+        Database.insert(acc);
+        Opportunity opp = new Opportunity(Name='not relevant',
+                                          StageName='Prospecting', 
+                                          CloseDate=Date.newInstance(2021, 02, 04),
+                                          AccountId=acc.Id);
+        Database.insert(opp);
+
+        //when
+        List<String> notFilledFieldsList = ifirmaService.checkFilledFields(opp.Id);
+        //then
+        System.assertNotEquals(null, notFilledFieldsList);
+        System.assertEquals(8, notFilledFieldsList.size());
+        System.assertNotEquals(0, notFilledFieldsList.size());
     }
 }

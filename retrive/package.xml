@@ -36,6 +36,7 @@
         <members>Opportunity.Service_Name__c</members>
         <members>OpportunityLineItem.Unit_Foreign__c</members>
         <members>OpportunityLineItem.Unit__c</members>
+		<members>Ifirma_Rest_Data__mdt.Abonent_Key__c</members>
         <name>CustomField</name>
     </types>
     <types>
@@ -66,6 +67,13 @@
 	<types>
         <members>Invoices/Invoices_2bD</members>
         <name>Report</name>
+    </types>
+	<types>
+        <members>Opportunity.Date_Of_Tax_Obligation_And_Sale_Date</members>
+        <members>Opportunity.Payment_Date_And_Sale_Date</members>
+        <members>Opportunity.Publish_Date_And_Sale_Date</members>
+        <members>Opportunity.Sale_Date_And_Today</members>
+        <name>ValidationRule</name>
     </types>
     <version>48.0</version>
 </Package>

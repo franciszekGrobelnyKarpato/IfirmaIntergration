@@ -374,6 +374,7 @@ then save invoice to Invoice Custom Object with related Opportunity
 */
     @AuraEnabled
     public static PostResponseWrapper createInvoiceByOpportunity(Id recordId){      
+System.debug('metoda odpalona z testu');
         PostResponseWrapper postResponseWrapper = new PostResponseWrapper();            
         Integer newInvoiceIdentify;
         String lineItems = '';
@@ -391,7 +392,7 @@ then save invoice to Invoice Custom Object with related Opportunity
         
         Map<String, Ifirma_Invoice_Settings__mdt> invoiceRestdata = new Map<String, Ifirma_Invoice_Settings__mdt>();
         for(Ifirma_Invoice_Settings__mdt invoiceSett : [SELECT Label, Country_Names__c, PrefiksUE__c, Authorized_Person__c, Place_Of_Creation__c, Template_Name__c, Bank_Account_Number__c, Currency_Type__c, Currency_Value__c
-                                              FROM Ifirma_Invoice_Settings__mdt]){
+                                                        FROM Ifirma_Invoice_Settings__mdt]){
             invoiceRestdata.put(invoiceSett.Label, invoiceSett);
         }         
         for(String label : invoiceRestdata.keySet()){
@@ -408,7 +409,7 @@ then save invoice to Invoice Custom Object with related Opportunity
         List<OpportunityLineItem> oppProductList = [SELECT Unit__c, Unit_Foreign__c,  Quantity, UnitPrice, Product2.Name
                                                     FROM OpportunityLineItem
                                                     WHERE Opportunity.Id =:recordId];
-                                                                          
+        checkAndChangeAccountingMonth(opportunityToSend.Sale_Date__c);
         String generalData = '"DataWystawienia":"'+DateTime.newInstance(opportunityToSend.Publish_Date__c.year(), opportunityToSend.Publish_Date__c.month(), opportunityToSend.Publish_Date__c.day()).format('yyyy-MM-dd')+'","DataSprzedazy":"'+DateTime.newInstance(opportunityToSend.Sale_Date__c.year(), opportunityToSend.Sale_Date__c.month(), opportunityToSend.Sale_Date__c.day()).format('yyyy-MM-dd')+'","FormatDatySprzedazy":"DZN","SposobZaplaty":"PRZ","RodzajPodpisuOdbiorcy":"OUP","WidocznyNumerGios":false,"Numer":null,"TerminPlatnosci":"'+DateTime.newInstance(opportunityToSend.Payment_Date__c.year(), opportunityToSend.Payment_Date__c.month(), opportunityToSend.Payment_Date__c.day()).format('yyyy-MM-dd')+'"';
         String account = '{"Nazwa":"'+oppAccount.Name+'","NIP":"'+oppAccount.Nip__c+'", "KodPocztowy":"'+oppAccount.BillingPostalCode+'","Kraj":"'+oppAccount.BillingCountry+'"';
         if(languageLabel.equals('Polish')){
@@ -450,14 +451,14 @@ then save invoice to Invoice Custom Object with related Opportunity
             }
         } 
         String restPost = '{'+generalData+',"Pozycje":['+lineItems+'],"Kontrahent":'+account+'}';
-        HttpResponse responsePost = getHttpResponse('POST', restPost, endpointPost);
+        HttpResponse responsePost = getHttpResponse('POST', restPost, endpointPost, 'faktura');
         newInvoiceIdentify = PostResponseJSON2Apex.parse(responsePost.getBody()).response.Identyfikator;  
         if(languageLabel.equals('Polish')){
             endpointGet = 'https://www.ifirma.pl/iapi/fakturakraj/'+newInvoiceIdentify+'.json';
         }else{
             endpointGet = 'https://www.ifirma.pl/iapi/fakturaeksportuslugue/'+newInvoiceIdentify+'.json';
         }
-        String invoiceName = InvoiceByIDJSON2Apex.parse(getHttpResponse('GET', '', endpointGet).getBody()).response.PelnyNumer;     
+        String invoiceName = InvoiceByIDJSON2Apex.parse(getHttpResponse('GET', '', endpointGet, 'faktura').getBody()).response.PelnyNumer;     
         saveInvoices();
         for(Invoice_Custom__c inv :[SELECT Name, Opportunity__c 
                                     FROM Invoice_Custom__c]){
@@ -471,13 +472,31 @@ then save invoice to Invoice Custom Object with related Opportunity
         postResponseWrapper.info = PostResponseJSON2Apex.parse(responsePost.getBody()).response.Informacja;
         postResponseWrapper.responseCode = PostResponseJSON2Apex.parse(responsePost.getBody()).response.Kod;
         return postResponseWrapper; 
-    }    
-    private static HttpResponse getHttpResponse(String colloutType, String rest, String endpoint){
-        Ifirma_Rest_Data__mdt restdata = [SELECT User__c, Key__c
+    }  
+    
+    private static void checkAndChangeAccountingMonth(Datetime saleDate){  
+System.debug('przed strzeleniem geta o mies ksiegowy');
+        String endpoint ='https://www.ifirma.pl/iapi/abonent/miesiacksiegowy.json'; 
+        HttpResponse response = getHttpResponse('GET', '', endpoint, 'abonent');
+        Integer accountingMonth = AccountingMonthJSON2Apex.parse(response.getBody()).response.MiesiacKsiegowy;
+System.debug('accountingMonth '+accountingMonth);
+System.debug('saleDate '+saleDate);
+        while(saleDate.month() != accountingMonth){
+            if(saleDate.month() > accountingMonth){
+                response = getHttpResponse('PUT', '{"MiesiacKsiegowy":"NAST","PrzeniesDaneZPoprzedniegoRoku":true}', endpoint, 'abonent');               
+                accountingMonth++;
+            }else if(saleDate.month() < accountingMonth){
+                response = getHttpResponse('PUT', '{"MiesiacKsiegowy":"POPRZ","PrzeniesDaneZPoprzedniegoRoku":true}', endpoint, 'abonent');  
+                accountingMonth--;
+            }
+        }        
+    }
+    private static HttpResponse getHttpResponse(String colloutType, String rest, String endpoint, String keyType){
+        Ifirma_Rest_Data__mdt restdata = [SELECT User__c, Key__c, Abonent_Key__c
                                           FROM Ifirma_Rest_Data__mdt 
                                           WHERE Label='Settings' LIMIT 1];  
-        String body = endpoint+restdata.User__c+'faktura'+rest;  
-        Blob hash = Crypto.generateMac('hmacSHA1', Blob.ValueOf(body), EncodingUtil.convertFromHex(restdata.Key__c));  
+        String body = endpoint + restdata.User__c + keyType + rest;  
+        Blob hash = Crypto.generateMac('hmacSHA1', Blob.ValueOf(body), EncodingUtil.convertFromHex( keyType == 'faktura' ? restdata.Key__c : restdata.Abonent_Key__c));  
         Http http = new Http();
         HttpRequest request = new HttpRequest();
         request.setEndpoint(endpoint);
@@ -485,7 +504,7 @@ then save invoice to Invoice Custom Object with related Opportunity
         request.setHeader('Accept', 'application/json');
         request.setHeader('Content-Type', 'application/json; charset=UTF-8');
         request.setHeader('Authentication', 'IAPIS user='+restdata.User__c+', hmac-sha1=' + EncodingUtil.convertToHex(hash));   
-        if(colloutType.equals('POST')){
+        if(colloutType.equals('POST') || colloutType.equals('PUT')){
             request.setBody(rest);
         }          
         HttpResponse response = http.send(request);
@@ -496,9 +515,20 @@ then save invoice to Invoice Custom Object with related Opportunity
     public static List<String> checkFilledFields(Id recordId){       
         List<String> notFilled = new List<String>();
         Map<String, String> oppData = new Map<String, String>();
-        Opportunity oppToCreateInvoice = [SELECT Date_Of_Tax_Obligation__c, Account.BillingCity, Account.BillingPostalCode, Payment_Date__c, Publish_Date__c, Sale_Date__c, Vat_Percentage__c
+        Opportunity oppToCreateInvoice = [SELECT Date_Of_Tax_Obligation__c, Account.BillingCountry, Account.BillingCity, Account.BillingPostalCode, Payment_Date__c, Publish_Date__c, Sale_Date__c, Vat_Percentage__c
                                           FROM Opportunity
                                           WHERE ID = :recordId];
+        List<Ifirma_Invoice_Settings__mdt> countriesNames = [SELECT Country_Names__c
+                                                            FROM Ifirma_Invoice_Settings__mdt];
+        Boolean isBillingCountryInMeta = false;
+        for(Ifirma_Invoice_Settings__mdt countryNames : countriesNames){            
+            List<String> countries = countryNames.Country_Names__c.split(',');
+            for(String country : countries){
+                if(oppToCreateInvoice.Account.BillingCountry.toLowerCase().equals(country.toLowerCase())){
+                    isBillingCountryInMeta = true;
+                }
+            }
+        }                                                        
         
         oppData.put(Schema.getGlobalDescribe().get('Opportunity').getDescribe().fields.getMap().get('Date_Of_Tax_Obligation__c').getDescribe().getLabel(), String.valueOf(oppToCreateInvoice.Date_Of_Tax_Obligation__c));
         oppData.put(Schema.getGlobalDescribe().get('Opportunity').getDescribe().fields.getMap().get('Payment_Date__c').getDescribe().getLabel(), String.valueOf(oppToCreateInvoice.Payment_Date__c));
@@ -507,10 +537,8 @@ then save invoice to Invoice Custom Object with related Opportunity
         oppData.put(Schema.getGlobalDescribe().get('Opportunity').getDescribe().fields.getMap().get('Vat_Percentage__c').getDescribe().getLabel(), oppToCreateInvoice.Vat_Percentage__c);
         oppData.put(Schema.getGlobalDescribe().get('Account').getDescribe().fields.getMap().get('BillingCity').getDescribe().getLabel(), oppToCreateInvoice.Account.BillingCity);        
         oppData.put(Schema.getGlobalDescribe().get('Account').getDescribe().fields.getMap().get('BillingPostalCode').getDescribe().getLabel(), oppToCreateInvoice.Account.BillingPostalCode);
-System.debug('oppData' + oppData);
         for(String fieldKey : oppData.keySet()){
             if(oppData.get(fieldKey) == null){
-System.debug('powinno sei dorzucic ' + fieldKey);
                 notFilled.add(fieldKey);
             }
         }         
@@ -518,6 +546,9 @@ System.debug('powinno sei dorzucic ' + fieldKey);
             FROM OpportunityLineItem 
             WHERE  Opportunity.id = :recordId].size() == 0){
             notFilled.add(' Add Product');
+        }
+        if(!isBillingCountryInMeta){
+            notFilled.add(' meta data for Account Billing Country');
         }
         return notFilled;
     }

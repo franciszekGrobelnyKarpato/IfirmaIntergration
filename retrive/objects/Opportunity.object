@@ -88,4 +88,43 @@
         <type>Text</type>
         <unique>false</unique>
     </fields>
+	 <validationRules>
+        <fullName>Date_Of_Tax_Obligation_And_Sale_Date</fullName>
+        <active>true</active>
+        <errorConditionFormula>OR(
+ Date_Of_Tax_Obligation__c &lt; Sale_Date__c,
+	MONTH( Date_Of_Tax_Obligation__c) &lt;&gt; MONTH(Sale_Date__c)
+)</errorConditionFormula>
+        <errorDisplayField>Date_Of_Tax_Obligation__c</errorDisplayField>
+        <errorMessage>Date oF Tax Obligation cant&apos;t be before Sale Date and after last day of Sale Date month</errorMessage>
+    </validationRules>
+    <validationRules>
+        <fullName>Payment_Date_And_Sale_Date</fullName>
+        <active>true</active>
+        <errorConditionFormula>Payment_Date__c &lt; Sale_Date__c</errorConditionFormula>
+        <errorDisplayField>Payment_Date__c</errorDisplayField>
+        <errorMessage>Payment Date can&apos;t be before Sale Date</errorMessage>
+    </validationRules>
+    <validationRules>
+        <fullName>Publish_Date_And_Sale_Date</fullName>
+        <active>true</active>
+        <errorConditionFormula>OR(
+    Publish_Date__c &lt; Sale_Date__c,
+    AND(
+								MONTH(Publish_Date__c) = MONTH(ADDMONTHS(Sale_Date__c,1)),
+								MONTH(Publish_Date__c) &lt; MONTH(ADDMONTHS(Sale_Date__c,2)),
+								DAY(Publish_Date__c) &gt; 15
+    ),
+    MONTH(Publish_Date__c) &gt; MONTH(ADDMONTHS(Sale_Date__c,1))
+)</errorConditionFormula>
+        <errorDisplayField>Publish_Date__c</errorDisplayField>
+        <errorMessage>Publish Date can&apos;t be before Sale Date and after 15 day of next Sale Date month</errorMessage>
+    </validationRules>
+    <validationRules>
+        <fullName>Sale_Date_And_Today</fullName>
+        <active>true</active>
+        <errorConditionFormula>MONTH(Sale_Date__c) &gt; MONTH(ADDMONTHS(TODAY(),1))</errorConditionFormula>
+        <errorDisplayField>Sale_Date__c</errorDisplayField>
+        <errorMessage>Sale Date can&apos;t be later than 2 next months from the current month</errorMessage>
+    </validationRules>
 </CustomObject>
