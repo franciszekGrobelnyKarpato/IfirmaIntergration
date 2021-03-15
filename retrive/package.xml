@@ -4,6 +4,7 @@
         <members>DataNotFullyFilledExceptionTest</members>		
         <members>InvoiceByIDJSON2Apex</members>       
         <members>PostResponseJSON2Apex</members>      		    
+		<members>AccountingMonthJSON2Apex</members>
         <members>WeeklyIfirma</members>
         <members>WeeklyIfirmaTest</members>      
         <members>hmacGeneratorTest</members>		
