@@ -14,4 +14,8 @@
         <field>User__c</field>
         <value xsi:type="xsd:string">ifirmavat@int.pl</value>
     </values>
+	<values>
+        <field>Abonent_Key__c</field>
+        <value xsi:type="xsd:string">96EBF36EC0C96048</value>
+    </values>  
 </CustomMetadata>

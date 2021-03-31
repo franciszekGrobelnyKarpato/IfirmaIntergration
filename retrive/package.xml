@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>        
-        <members>DataNotFullyFilledExceptionTest</members>		
+        <members>DataNotFullyFilledExceptionTest</members>	
+		<members>InvoicesListJSON2Apex</members>
+        <members>SingleInvoiceJSON2Apex</members>		
         <members>InvoiceByIDJSON2Apex</members>       
         <members>PostResponseJSON2Apex</members>      		    
+		<members>AccountingMonthJSON2Apex</members>
         <members>WeeklyIfirma</members>
         <members>WeeklyIfirmaTest</members>      
         <members>hmacGeneratorTest</members>		
