@@ -439,7 +439,7 @@ then save invoice to Invoice Custom Object with related Opportunity
         account += '}';
         for(Integer i = 0; i < oppProductList.size(); i++){
             OpportunityLineItem oppLI = oppProductList.get(i);
-            lineItems += '{"StawkaVat":'+ Integer.valueOf(opportunityToSend.Vat_Percentage__c)/100+',"TypStawkiVat":"PRC","Ilosc":'+oppLI.Quantity+',"CenaJednostkowa":'+oppLI.UnitPrice+',"NazwaPelna":"'+oppLI.Product2.Name+'","Jednostka":"'+oppLI.Unit__c+'"';
+            lineItems += '{"StawkaVat":'+ Decimal.valueOf(opportunityToSend.Vat_Percentage__c)/100+',"TypStawkiVat":"PRC","Ilosc":'+oppLI.Quantity+',"CenaJednostkowa":'+oppLI.UnitPrice+',"NazwaPelna":"'+oppLI.Product2.Name+'","Jednostka":"'+oppLI.Unit__c+'"';
             if(languageLabel.equals('Polish')){
                 lineItems += ',"PKWiU":""}';
             }else{
